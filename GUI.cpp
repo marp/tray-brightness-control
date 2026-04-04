@@ -22,14 +22,14 @@ GUI::~GUI()
 	}
 }
 
-BOOL GUI::AddTaskBarIcon(BOOL modify)
+BOOL GUI::AddTaskBarIcon(BOOL modify, INT8 passedBrightness)
 {
     NOTIFYICONDATA nid = { 0 };
 
     std::wstring sTip;
     sTip.reserve(50);
     sTip = L"Average brightness: ";
-    INT8 avgBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
+    INT8 avgBrightness = passedBrightness != -1 ? passedBrightness : Monitor::GetCurrentAverageBrightnessOfAll();
     if (avgBrightness < 0)
     {
         sTip = L"Couldn't read average brightness";
@@ -49,32 +49,23 @@ BOOL GUI::AddTaskBarIcon(BOOL modify)
     // Determine the appropriate icon based on the average brightness
     INT8 iconIndex = 0;
     if (avgBrightness >= 90) {
-        iconIndex = 7;
-    }
-    else if (avgBrightness >= 75) {
-        iconIndex = 6;
-    }
-    else if (avgBrightness >= 60) {
         iconIndex = 5;
     }
-    else if (avgBrightness >= 45) {
+    else if (avgBrightness >= 60) {
         iconIndex = 4;
     }
-    else if (avgBrightness >= 30) {
+    else if (avgBrightness >= 40) {
         iconIndex = 3;
     }
-    else if (avgBrightness >= 20) {
+    else if (avgBrightness >= 30) {
         iconIndex = 2;
     }
     else if (avgBrightness >= 10) {
         iconIndex = 1;
     }
-    else if (avgBrightness >= 0) {
-        iconIndex = 0;
-    }
     else
     {
-        iconIndex = 90;
+        iconIndex = 1;
     }
 
     OutputDebugString(L"Icon index: " + iconIndex);
@@ -97,8 +88,8 @@ BOOL GUI::AddTaskBarIcon(BOOL modify)
     return res;
 }
 
-BOOL GUI::UpdateTaskBarIcon() {
-	return this->AddTaskBarIcon(true);
+BOOL GUI::UpdateTaskBarIcon(INT8 passedBrightness) {
+	return this->AddTaskBarIcon(true, passedBrightness);
 }
 
 BOOL GUI::SetTooltip(LPWSTR szTooltip) {
@@ -128,13 +119,14 @@ BOOL GUI::CreateTaskBarMenu()
 
     INT8 averageBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
 
-    std::vector<WORD> menuValues = this->configuration->GetContextMenuValues();
+    std::vector<MenuValue> menuValues = this->configuration->GetContextMenuValues();
     if (!menuValues.empty()) {
         // Populate the tray menu with items read from the INI file
         for (size_t i = 0; i < menuValues.size(); ++i) {
-            // Append each value to the menu as a new item
-            std::wstring menuItemText = std::to_wstring(menuValues[i]) + L"%";
-            UINT flags = MF_STRING | (menuValues[i] == (WORD)averageBrightness ? MF_CHECKED : 0);
+            std::wstring menuItemText = menuValues[i].text;
+            WORD val = menuValues[i].value;
+
+            UINT flags = MF_STRING | (val == (WORD)averageBrightness ? MF_CHECKED : 0);
             AppendMenu(hTrayMenu, flags, IDM_TRAY_CONTEXTMENU + i, menuItemText.c_str());
         }
     }
@@ -156,6 +148,23 @@ BOOL GUI::CreateTaskBarMenu()
     }
 
     return InsertMenuItem(hTrayMenu, IDM_EXIT, FALSE, &mii);
+}
+
+BOOL GUI::UpdateTaskBarMenu(INT8 passedBrightness) {
+    if (!this->hTrayMenu) {
+        return FALSE;
+    }
+
+    INT8 averageBrightness = passedBrightness != -1 ? passedBrightness : Monitor::GetCurrentAverageBrightnessOfAll();
+    std::vector<MenuValue> menuValues = this->configuration->GetContextMenuValues();
+
+    for (size_t i = 0; i < menuValues.size(); ++i) {
+        WORD val = menuValues[i].value;
+        UINT checkState = MF_BYCOMMAND | (val == (WORD)averageBrightness ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(this->hTrayMenu, IDM_TRAY_CONTEXTMENU + i, checkState);
+    }
+
+    return TRUE;
 }
 
 HBITMAP GUI::IconToBitmap(HICON hIcon)

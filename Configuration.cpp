@@ -110,28 +110,47 @@ LPCWSTR Configuration::GetDefaultConfigFilePath() {
    return wstrFilePath.c_str();  
 }
 
-std::vector<WORD> Configuration::GetContextMenuValues() {
+std::vector<MenuValue> Configuration::GetContextMenuValues() {
 	return this->contextMenuValues;
 }
 
-std::vector<WORD> Configuration::GetContextMenuValues(LPWSTR configFilePath) {
-    wchar_t buffer[1024] = { 0 };
+std::vector<MenuValue> Configuration::GetContextMenuValues(LPWSTR configFilePath) {
+	wchar_t buffer[1024] = { 0 };
 
-    // Reading the 'Values' key from the [MenuValues] section in the INI file
-    GetPrivateProfileString(L"BrightnessValues", L"MenuValues", L"", buffer, 1024, configFilePath);
+	// Reading the 'Values' key from the [MenuValues] section in the INI file
+	GetPrivateProfileString(L"BrightnessValues", L"MenuValues", L"", buffer, 1024, configFilePath);
 
-    // Split the comma-separated values into a vector of integers
-    std::vector<WORD> values;
-    wchar_t* context = nullptr; // Context variable for wcstok_s
-    wchar_t* token = wcstok_s(buffer, L",", &context); // Use wcstok_s for secure tokenization
-    while (token != nullptr) {
-        values.push_back(_wtoi(token)); // Convert each token to an integer
-        token = wcstok_s(nullptr, L",", &context);
-    }
-    return values;
+	// Split the comma-separated values into a vector of strings
+	std::vector<MenuValue> values;
+	wchar_t* context = nullptr; // Context variable for wcstok_s
+	wchar_t* token = wcstok_s(buffer, L",", &context); // Use wcstok_s for secure tokenization
+	while (token != nullptr) {
+		MenuValue mv;
+		std::wstring textStr = token;
+
+		bool isNumeric = true;
+		for (wchar_t c : textStr) {
+			if (!iswdigit(c) && c != L' ') {
+				isNumeric = false;
+				break;
+			}
+		}
+
+		if (isNumeric && !textStr.empty()) {
+			mv.text = textStr + L"%";
+		}
+		else {
+			mv.text = textStr;
+		}
+		mv.value = static_cast<WORD>(_wtoi(textStr.c_str()));
+
+		values.push_back(mv);
+		token = wcstok_s(nullptr, L",", &context);
+	}
+	return values;
 }
 
-VOID Configuration::SetContextMenuValues(std::vector<WORD> values) {
+VOID Configuration::SetContextMenuValues(std::vector<MenuValue> values) {
 	// Assuming you want to set the context menu values from the INI file
 	this->contextMenuValues = values;
 }

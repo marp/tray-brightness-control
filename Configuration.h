@@ -3,11 +3,17 @@
 #include <vector>
 #include <tchar.h>
 #include <string>
+
+struct MenuValue {
+	std::wstring text;
+	WORD value;
+};
+
 class Configuration
 {
 private:
 	LPWSTR configFilePath;
-	std::vector<WORD> contextMenuValues;
+	std::vector<MenuValue> contextMenuValues;
 	std::vector<WORD> doubleClickValues;
 
 public:
@@ -19,8 +25,8 @@ public:
 	LPWSTR GetConfigFilePath();
 	VOID SetConfigFilePath(LPWSTR);
 
-	std::vector<WORD> GetContextMenuValues();
-	VOID SetContextMenuValues(std::vector<WORD>);
+	std::vector<MenuValue> GetContextMenuValues();
+	VOID SetContextMenuValues(std::vector<MenuValue>);
 	std::vector<WORD> GetDoubleClickValues();
 	VOID SetDoubleClickValues(std::vector<WORD>);
 
@@ -28,7 +34,7 @@ public:
 	static BOOL ConfigFileExists(LPCWSTR);
 	static BOOL CreateConfigFile(LPWSTR);
 	static LPCWSTR GetDefaultConfigFilePath();
-	static std::vector<WORD> GetContextMenuValues(LPWSTR);
+	static std::vector<MenuValue> GetContextMenuValues(LPWSTR);
 	static std::vector<WORD> GetDoubleClickValues(LPWSTR);
 	static VOID OpenTextEditor(LPWSTR);
 	static BOOL IsAutostartEnabled();

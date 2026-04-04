@@ -40,20 +40,20 @@ const WCHAR* compilerVersion = L"MSVC " _CRT_STRINGIZE(_MSC_VER);
 #define STRINGIZE(s) STRINGIZE_(s)
 
 
-#define VER_MAJOR_VERSION   6
-#define VER_MINOR_VERSION   7
+#define VER_MAJOR_VERSION   0
+#define VER_MINOR_VERSION   1
 #define VER_HOTFIX_VERSION  0
-#define VER_BUILD_NUMBER    999
+//#define VER_BUILD_NUMBER    999
 
-#define VER_FILE_VERSION    VER_MAJOR_VERSION, VER_MINOR_VERSION, VER_HOTFIX_VERSION, VER_BUILD_NUMBER
+#define VER_FILE_VERSION    VER_MAJOR_VERSION, VER_MINOR_VERSION, VER_HOTFIX_VERSION, /*VER_BUILD_NUMBER*/
 #define VER_FILE_VERSION_STR    STRINGIZE(VER_MAJOR_VERSION)    \
 "." STRINGIZE(VER_MINOR_VERSION)    \
 "." STRINGIZE(VER_HOTFIX_VERSION)   \
-"." STRINGIZE(VER_BUILD_NUMBER) \
+//"." STRINGIZE(VER_BUILD_NUMBER) \
 
 #define VER_PRODUCT_VERSION         VER_FILE_VERSION
 #define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
-const WCHAR* applicationVersion = STRINGIZE(VER_MAJOR_VERSION) L"." STRINGIZE(VER_MINOR_VERSION) L"." STRINGIZE(VER_HOTFIX_VERSION) L"." STRINGIZE(VER_BUILD_NUMBER);
+const WCHAR* applicationVersion = STRINGIZE(VER_MAJOR_VERSION) L"." STRINGIZE(VER_MINOR_VERSION) L"." STRINGIZE(VER_HOTFIX_VERSION);// L"." STRINGIZE(VER_BUILD_NUMBER);
 
 
 /////////////////////
@@ -107,13 +107,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+	SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
-	std::wstring message = L"Build date: " + std::wstring(buildDate) + L"\nCompiler: " + std::wstring(compilerVersion) + L"\n" + buildArchitecture + L"\n" + std::wstring(applicationVersion);
-    MessageBoxW(NULL, message.c_str(), L"Build info", MB_OK | MB_ICONINFORMATION);
-
-    //Check for running instance
-    HWND hExistingWnd = ::FindWindow(szWindowClass, NULL);
+	//Check for running instance
+	HWND hExistingWnd = ::FindWindow(szWindowClass, NULL);
     if (hExistingWnd != NULL)
     {
         ShowWindow(hExistingWnd, SW_NORMAL);
@@ -259,6 +256,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case CMSG_UPDATE_GUI:
+        {
+            INT8 passedBrightness = static_cast<INT8>(wParam);
+            gui->UpdateTaskBarMenu(passedBrightness);
+            gui->UpdateTaskBarIcon(passedBrightness);
+        }
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -268,24 +272,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (wmId >= IDM_TRAY_CONTEXTMENU && wmId < IDM_TRAY_CONTEXTMENU + 999) {
                 size_t index = wmId - IDM_TRAY_CONTEXTMENU;
 
-                std::vector<WORD> menuValues = config->GetContextMenuValues();
+                std::vector<MenuValue> menuValues = config->GetContextMenuValues();
 
                 if (index < menuValues.size()) {
-                    WORD brightness = menuValues[index];
-                    OutputDebugString(L"" + menuValues[index]);
+                    WORD brightness = menuValues[index].value;
+                    OutputDebugStringW(menuValues[index].text.c_str());
 
                     // The error 'invoke': no matching overloaded function found typically occurs when you are trying to use std::invoke or a callable object incorrectly.
                     // In the provided code, the issue might be related to the lambda function or the way it is being passed to std::thread.
                     // Ensure that the lambda function captures the required variables correctly and matches the expected signature.
 
-                    
-                    Monitor::SetBrightnessForAllAsync(hWnd, static_cast<unsigned long>(brightness));
-                  
 
-                    //TODO: Make modify function
-                    gui->DestroyTrayMenu();
-                    gui->CreateTaskBarMenu();
-                    gui->UpdateTaskBarIcon();
+                    Monitor::SetBrightnessForAllAsync(hWnd, static_cast<unsigned long>(brightness));
                 }
             }
 
@@ -401,31 +399,10 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_INITDIALOG:
-        // Load the caption strings you want to use from the string table
-        // in the resource file, or get them from wherever you want.
-        // These are the "variables" you wanted to use in the question.
-        //TCHAR* pszMessage;
-        //LoadString(hInst,   /* instance handle for app or resource DLL */
-        //    IDS_MESSAGE, /* ID of the string resource to load       */
-        //    reinterpret_cast<LPTSTR>(&pszMessage),
-        //    0);
-        //TCHAR* pszOkBtn;
-        //LoadString(hInstance, IDS_OKBUTTON, reinterpret_cast<LPTSTR>(&pszOkBtn), 0);
-        //// ...etc.
-
-        //// Set the caption text for each control.
-        //SetDlgItemText(hwndDlg,     /* handle to the dialog box window */
-        //    IDC_MESSAGE, /* ID of the control to modify     */
-        //    pszMessage); /* variable containing text to set */
-        //SetDlgItemText(hwndDlg, IDOK, pszOkBtn);
-        //// ...etc.
-
-        //// And, if you want to set some other properties, you can do that too.
-        //// For example, you might set the caption of the dialog itself.
-        //TCHAR* pszTitle;
-        //LoadString(hInstance, IDS_DLGCAPTION, reinterpret_cast<LPTSTR>(&pszTitle), 0);
-        //SetWindowText(hwndDlg, pszTitle);
-        // ...etc.
+        {
+        std::wstring buildInfo = L"Version: " + std::wstring(applicationVersion) + L"\n\nBuild date: " + std::wstring(buildDate) + L"\nCompiler: " + std::wstring(compilerVersion) + L"\nArchitecture: " + buildArchitecture;
+            SetDlgItemTextW(hDlg, IDC_BUILD_INFO, buildInfo.c_str());
+        }
         return (INT_PTR)TRUE;
 
     case WM_COMMAND:
@@ -493,11 +470,7 @@ void HandleDoubleClick() {
         // Output the next value using OutputDebugString for debugging
         OutputDebugString(nextValueText.c_str());
 
-        for (Monitor* monitor : Monitor::monitors)
-        {
-            monitor->setBrightness(doubleClickValues[nextIndex]);
-        }
-
+        Monitor::SetBrightnessForAllAsync(hWnd, doubleClickValues[nextIndex]);
     }
     else {
         OutputDebugString(L"DoubleClick values from INI file are empty.");

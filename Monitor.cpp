@@ -1,4 +1,6 @@
 ﻿#include "Monitor.h"
+#include "Monitor.h"
+#include "Resource.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -706,13 +708,17 @@ BOOL Monitor::SetBrightnessForAll(unsigned long newValue) {
 
 VOID Monitor::SetBrightnessForAllAsync(HWND hWnd, unsigned long newValue) {  
    std::thread([hWnd, newValue]() { // Capture newValue explicitly in the lambda  
-       BOOL isValid = true;  
-       for (Monitor* monitor : monitors) {  
-           if (!monitor->setBrightness(newValue)) {  
-               isValid = false;  
-           }  
-       }  
-       return isValid;  
+	   BOOL isValid = true;  
+	   for (Monitor* monitor : monitors) {  
+		   if (!monitor->setBrightness(newValue)) {  
+			   isValid = false;  
+		   }  
+	   }  
+	   if (hWnd) {
+		   INT8 actualBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
+		   PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)actualBrightness, 0);
+	   }
+	   return isValid;  
    }).detach();  
 }
 
