@@ -446,12 +446,13 @@ void HandleDoubleClick() {
 
         // Determine the next value in the sequence or loop back to the first value if it's the last one
         int nextIndex = (closestIndex + 1) % doubleClickValues.size();
-        std::wstring nextValueText = L"Next value: " + std::to_wstring(doubleClickValues[nextIndex]) + L"%";
+        std::wstring nextValueText = L"Setting value: " + std::to_wstring(doubleClickValues[nextIndex]) + L"%";
 
         // Output the next value using OutputDebugString for debugging
         OutputDebugString(nextValueText.c_str());
 
         Monitor::SetBrightnessForAllAsync(hWnd, doubleClickValues[nextIndex]);
+        PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)doubleClickValues[nextIndex], 0);
     }
     else {
         OutputDebugString(L"DoubleClick values from INI file are empty.");
