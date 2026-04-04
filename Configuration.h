@@ -12,7 +12,7 @@ struct MenuValue {
 class Configuration
 {
 private:
-	LPWSTR configFilePath;
+	std::wstring configFilePath;
 	std::vector<MenuValue> contextMenuValues;
 	std::vector<WORD> doubleClickValues;
 

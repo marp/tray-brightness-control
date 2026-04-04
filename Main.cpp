@@ -53,28 +53,26 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void                HandleDoubleClick();
 
 void UpdateTrayIconTooltipAsync(HWND hWnd) {
-    std::thread([hWnd]() {
-        INT8 averageBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
-        if (averageBrightness < 0) {
-            return;
-        }
+    INT8 averageBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
+    if (averageBrightness < 0) {
+        return;
+    }
 
-        // Prepare tooltip text  
-        std::wstring sTip = L"Average brightness: " + std::to_wstring(averageBrightness) + L"%";
+    // Prepare tooltip text  
+    std::wstring sTip = L"Average brightness: " + std::to_wstring(averageBrightness) + L"%";
 
-        // Update NOTIFYICONDATA  
-        NOTIFYICONDATA nid = {};
-        nid.cbSize = sizeof(NOTIFYICONDATA);
-        nid.hWnd = hWnd;
-        nid.uID = ID_TRAY1;
-        nid.uFlags = NIF_TIP;
+    // Update NOTIFYICONDATA  
+    NOTIFYICONDATA nid = {};
+    nid.cbSize = sizeof(NOTIFYICONDATA);
+    nid.hWnd = hWnd;
+    nid.uID = ID_TRAY1;
+    nid.uFlags = NIF_TIP;
 
-        // Use safer string copy function  
-        wcsncpy_s(nid.szTip, sTip.c_str(), _TRUNCATE);
+    // Use safer string copy function  
+    wcsncpy_s(nid.szTip, sTip.c_str(), _TRUNCATE);
 
-        // Update tray icon text  
-        Shell_NotifyIcon(NIM_MODIFY, &nid);
-        }).detach(); // Detach the thread to allow it to run independently  
+    // Update tray icon text  
+    Shell_NotifyIcon(NIM_MODIFY, &nid);
 }
 
 ///////////////////
@@ -148,6 +146,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
+
+    // Cleanup monitors
+    for (Monitor* m : Monitor::monitors) {
+        delete m;
+    }
+    Monitor::monitors.clear();
 
     return (int) msg.wParam;
 }
@@ -239,9 +243,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case CMSG_UPDATE_GUI:
         {
-            INT8 passedBrightness = static_cast<INT8>(wParam);
-            gui->UpdateTaskBarMenu(passedBrightness);
-            gui->UpdateTaskBarIcon(passedBrightness);
+            if (gui) {
+                INT8 passedBrightness = static_cast<INT8>(wParam);
+                gui->UpdateTaskBarMenu(passedBrightness);
+                gui->UpdateTaskBarIcon(passedBrightness);
+            }
         }
         break;
     case WM_COMMAND:

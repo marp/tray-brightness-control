@@ -21,13 +21,13 @@ Configuration::Configuration(LPWSTR wstrFilePath) {
 }
 
 BOOL Configuration::LoadConfiguration() {
-	this->SetContextMenuValues(Configuration::GetContextMenuValues(this->configFilePath));
-	this->SetDoubleClickValues(Configuration::GetDoubleClickValues(this->configFilePath));
-    return true;
+	this->SetContextMenuValues(Configuration::GetContextMenuValues(const_cast<LPWSTR>(this->configFilePath.c_str())));
+	this->SetDoubleClickValues(Configuration::GetDoubleClickValues(const_cast<LPWSTR>(this->configFilePath.c_str())));
+	return true;
 }
 
 LPWSTR Configuration::GetConfigFilePath() {
-	return this->configFilePath;
+    return const_cast<LPWSTR>(this->configFilePath.c_str());
 }
 
 VOID Configuration::SetConfigFilePath(LPWSTR wstrFilePath) {
