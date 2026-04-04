@@ -3,9 +3,9 @@
 #include "resource.h"
 
 // -------- WERSJA APLIKACJI --------
-#define TBC_VERSION_NUM 0,1,1,0
-#define TBC_VERSION_STR "0.1.1.0"
-#define TBC_VERSION_LTEXT "Version: 0.1.1.0"
+#define TBC_VERSION_NUM 0,1,0,0
+#define TBC_VERSION_STR "0.1.0.0"
+#define TBC_VERSION_LTEXT "Version: 0.1.0.0"
 // ----------------------------------
 
 #define APSTUDIO_READONLY_SYMBOLS
