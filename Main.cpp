@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "Main.h"
+#include <memory>
 
 #pragma comment(lib,"Shcore.lib")
 
@@ -59,8 +60,8 @@ const WCHAR* applicationVersion = STRINGIZE(VER_MAJOR_VERSION) L"." STRINGIZE(VE
 //    GLOBALS    ///
 ///////////////////
 BOOL g_doubleClickDetected = false;
-Configuration* config;
-GUI* gui;
+std::unique_ptr<Configuration> config;
+std::unique_ptr<GUI> gui;
 
 
 // Forward declarations of functions included in this code module:
@@ -109,7 +110,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
 	std::wstring message = L"Build date: " + std::wstring(buildDate) + L"\nCompiler: " + std::wstring(compilerVersion) + L"\n" + buildArchitecture + L"\n" + std::wstring(applicationVersion);
-    //MessageBoxW(NULL, message.c_str(), L"Build info", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(NULL, message.c_str(), L"Build info", MB_OK | MB_ICONINFORMATION);
 
     //Check for running instance
     HWND hExistingWnd = ::FindWindow(szWindowClass, NULL);
@@ -118,12 +119,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         ShowWindow(hExistingWnd, SW_NORMAL);
         BringWindowToTop(hExistingWnd);
         SetForegroundWindow(hExistingWnd);
-        return(1);
-    }
+		return(1);
+	}
 
-	config = new Configuration();
-        
-    // Initialize global strings
+	config = std::make_unique<Configuration>();
+
+	// Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_TRAYBRIGHTNESSCONTROL, szWindowClass, MAX_LOADSTRING);
     TrayBrightnessControlClass(hInstance);
@@ -131,7 +132,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Monitor::detectAllMonitors();
 
     GUI::hInst = hInstance;
-    gui = new GUI();
+    gui = std::make_unique<GUI>();
 
     if (!InitInstance(hInstance, nCmdShow))
     {
@@ -139,7 +140,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     GUI::hWnd = hWnd;
-    gui->configuration = config;
+    gui->configuration = config.get();
     GUI::AdjustWindowSizeForDPI(hWnd);
     gui->CreateMainWindowControls();
 
@@ -257,7 +258,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 KillTimer(hWnd, SINGLE_CLICK_TIMER_ID);
             }
         }
-    break;
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -377,6 +378,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_DESTROY:
+        gui.reset();
+        config.reset();
+        {
+            NOTIFYICONDATA nid = {};
+            nid.cbSize = sizeof(NOTIFYICONDATA);
+            nid.hWnd = hWnd;
+            nid.uID = ID_TRAY1;
+            Shell_NotifyIcon(NIM_DELETE, &nid);
+        }
         PostQuitMessage(0);
         break;
     default:
