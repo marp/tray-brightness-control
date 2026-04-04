@@ -36,25 +36,6 @@ L"ARM64";
 #endif
 const WCHAR* compilerVersion = L"MSVC " _CRT_STRINGIZE(_MSC_VER);
 
-#define STRINGIZE_(s) #s
-#define STRINGIZE(s) STRINGIZE_(s)
-
-
-#define VER_MAJOR_VERSION   0
-#define VER_MINOR_VERSION   1
-#define VER_HOTFIX_VERSION  0
-//#define VER_BUILD_NUMBER    999
-
-#define VER_FILE_VERSION    VER_MAJOR_VERSION, VER_MINOR_VERSION, VER_HOTFIX_VERSION, /*VER_BUILD_NUMBER*/
-#define VER_FILE_VERSION_STR    STRINGIZE(VER_MAJOR_VERSION)    \
-"." STRINGIZE(VER_MINOR_VERSION)    \
-"." STRINGIZE(VER_HOTFIX_VERSION)   \
-//"." STRINGIZE(VER_BUILD_NUMBER) \
-
-#define VER_PRODUCT_VERSION         VER_FILE_VERSION
-#define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
-const WCHAR* applicationVersion = STRINGIZE(VER_MAJOR_VERSION) L"." STRINGIZE(VER_MINOR_VERSION) L"." STRINGIZE(VER_HOTFIX_VERSION);// L"." STRINGIZE(VER_BUILD_NUMBER);
-
 
 /////////////////////
 //    GLOBALS    ///
@@ -400,7 +381,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
         {
-        std::wstring buildInfo = L"Version: " + std::wstring(applicationVersion) + L"\n\nBuild date: " + std::wstring(buildDate) + L"\nCompiler: " + std::wstring(compilerVersion) + L"\nArchitecture: " + buildArchitecture;
+        std::wstring buildInfo = L"Build date: " + std::wstring(buildDate) + L"\nCompiler: " + std::wstring(compilerVersion) + L"\nArchitecture: " + buildArchitecture;
             SetDlgItemTextW(hDlg, IDC_BUILD_INFO, buildInfo.c_str());
         }
         return (INT_PTR)TRUE;
