@@ -335,9 +335,9 @@ VOID GUI::CreateMainWindowControls() {
     //GROUP BOX
     hText = CreateWindow(L"Button", L"Configuration",
         WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-        xPosition, yPosition + margin, width, 110, GUI::hWnd, (HMENU)0, 0, NULL);
+        xPosition, yPosition + margin, width, 140, GUI::hWnd, (HMENU)0, 0, NULL);
     SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
-    
+
     width = 205;
     xPosition += margin;
     yPosition += height - 10;
@@ -375,6 +375,15 @@ VOID GUI::CreateMainWindowControls() {
         _T("BUTTON"), _T("Restore default config"),
         WS_TABSTOP | WS_VISIBLE | WS_CHILD,
         xPosition + margin, yPosition + margin * 2, width-40, height, GUI::hWnd, (HMENU)IDC_RESTORE_DEFAULTS_SETTINGS, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL
+    );
+    SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
+
+    yPosition += height;
+
+    hText = CreateWindow(
+        _T("BUTTON"), _T("Reload configuration"),
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD,
+        xPosition + margin, yPosition + margin * 3, width-40, height, GUI::hWnd, (HMENU)IDC_RELOAD_CONFIG, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL
     );
     SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 

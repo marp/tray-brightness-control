@@ -198,9 +198,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        szWindowClass, 
        szTitle, 
        WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-       ((GetSystemMetrics(SM_CXSCREEN) - 185) / 2), ((GetSystemMetrics(SM_CYSCREEN) - 496) / 2),
+       ((GetSystemMetrics(SM_CXSCREEN) - 496) / 2), ((GetSystemMetrics(SM_CYSCREEN) - 215) / 2),
        496, 
-       185, 
+       215, 
        nullptr, 
        nullptr, 
        hInstance, 
@@ -291,7 +291,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDC_RESTORE_DEFAULTS_SETTINGS:
                 if (MessageBox(hWnd, L"Do you want to replace the existing config.ini with the default one?", L"Restore the default configuration", MB_YESNO | MB_ICONWARNING) == 6) {
                     Configuration::CreateConfigFile(config->GetConfigFilePath());
+                    SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(IDC_RELOAD_CONFIG, 0), 0);
                 }
+                break;
+            case IDC_RELOAD_CONFIG:
+                config->LoadConfiguration();
+                gui->DestroyTrayMenu();
+                gui->CreateTaskBarMenu();
                 break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);

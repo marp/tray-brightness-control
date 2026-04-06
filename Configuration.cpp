@@ -74,7 +74,7 @@ BOOL Configuration::CreateConfigFile(LPWSTR wstrFilePath) {
     }
 
     // create a file on disk
-    HANDLE hFile = CreateFile(wstrFilePath, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFile(wstrFilePath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         MessageBox(0, _T("Failed to create a configuration file!"), _T("Error"), MB_ICONERROR);
         return FALSE;

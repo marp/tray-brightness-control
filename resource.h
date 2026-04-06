@@ -47,6 +47,7 @@
 #define IDC_EDIT_INI                    2008
 #define IDC_RESTORE_DEFAULTS_SETTINGS   2009
 #define IDC_BUILD_INFO                  2010
+#define IDC_RELOAD_CONFIG               2011
 #define CMSG_TRAY1                      0x8001
 #define CMSG_UPDATE_GUI                 0x8002
 #define IDC_STATIC                      -1
