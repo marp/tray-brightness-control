@@ -715,8 +715,8 @@ VOID Monitor::SetBrightnessForAllAsync(HWND hWnd, unsigned long newValue) {
 		   }  
 	   }  
 	   if (hWnd) {
-		   INT8 actualBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
-		   PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)actualBrightness, 0);
+		   //INT8 actualBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
+		   PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)newValue, 0);
 	   }
 	   return isValid;  
    }).detach();  

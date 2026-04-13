@@ -14,7 +14,6 @@ HINSTANCE hInst;                                // current instance
 HWND hWnd;                                      // main window
 WCHAR szTitle[MAX_LOADSTRING];                  // the title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-HFONT hNormalFont;                              // normal font
 HWND  hAutostartCheckbox;                       // autostart checkbox
 
 std::wstring configFilePath;
@@ -49,7 +48,7 @@ std::unique_ptr<GUI> gui;
 ATOM                TrayBrightnessControlClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    AboutProc(HWND, UINT, WPARAM, LPARAM);
 void                HandleDoubleClick();
 
 void UpdateTrayIconTooltipAsync(HWND hWnd) {
@@ -88,22 +87,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
+	// Initialize global strings
+	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	LoadStringW(hInstance, IDC_TRAYBRIGHTNESSCONTROL, szWindowClass, MAX_LOADSTRING);
+
 	//Check for running instance
 	HWND hExistingWnd = ::FindWindow(szWindowClass, NULL);
-    if (hExistingWnd != NULL)
-    {
-        ShowWindow(hExistingWnd, SW_NORMAL);
-        BringWindowToTop(hExistingWnd);
-        SetForegroundWindow(hExistingWnd);
+	if (hExistingWnd != NULL)
+	{
+		ShowWindow(hExistingWnd, SW_NORMAL);
+		BringWindowToTop(hExistingWnd);
+		SetForegroundWindow(hExistingWnd);
 		return(1);
 	}
 
 	config = std::make_unique<Configuration>();
 
-	// Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_TRAYBRIGHTNESSCONTROL, szWindowClass, MAX_LOADSTRING);
-    TrayBrightnessControlClass(hInstance);
+	TrayBrightnessControlClass(hInstance);
 
     Monitor::detectAllMonitors();
 
@@ -213,7 +213,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    //ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
-
+   UpdateTrayIconTooltipAsync(hWnd);
    return TRUE;
 }
 
@@ -245,8 +245,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             if (gui) {
                 INT8 passedBrightness = static_cast<INT8>(wParam);
-                gui->UpdateTaskBarMenu(passedBrightness);
+                gui->UpdateTaskBarMenu(wParam);
                 gui->UpdateTaskBarIcon(passedBrightness);
+                UpdateTrayIconTooltipAsync(hWnd);
             }
         }
         break;
@@ -277,13 +278,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId)
             {
             case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, AboutProc);
                 break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
             case IDC_AUTOSTART_CHECKBOX:
-                config->SetAutostart(SendMessage(hAutostartCheckbox, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                config->SetAutostart(SendMessage(GetDlgItem(hWnd, IDC_AUTOSTART_CHECKBOX), BM_GETCHECK, 0, 0) == BST_CHECKED);
                 break;
             case IDC_EDIT_INI:
                 Configuration::OpenTextEditor(config->GetConfigFilePath());
@@ -335,10 +336,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PostMessage(hWnd, WM_NULL, 0, 0); // This closes the menu when clicked outside
 
         }
-        else if (lParam == WM_MOUSEMOVE) 
+        /*else if (lParam == WM_MOUSEMOVE)
         {
             UpdateTrayIconTooltipAsync(hWnd);
-        }
+        }*/
 
     }
         break;
@@ -386,7 +387,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AboutProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
@@ -409,33 +410,33 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    static Monitor* monitor = nullptr; // Pointer to the Monitor object
-
-    switch (uMsg) {
-    case WM_INITDIALOG:
-        // Initialize the dialog with the monitor capabilities
-        monitor = reinterpret_cast<Monitor*>(lParam); // Get the monitor pointer
-        SetDlgItemText(hwndDlg, IDC_NAME, monitor->getNameW());
-        SetDlgItemText(hwndDlg, IDC_BRIGHTNESS, monitor->supportsBrightness() ? L"Yes" : L"No");
-        SetDlgItemText(hwndDlg, IDC_CONTRAST, monitor->supportsContrast() ? L"Yes" : L"No");
-        SetDlgItemText(hwndDlg, IDC_DEGAUSS, monitor->supportsDegauss() ? L"Yes" : L"No");
-        //SetDlgItemText(hwndDlg, IDC_DISPLAY_AREA_POSITION, monitor->supportsDisplayAreaPosition() ? L"Yes" : L"No");
-        //SetDlgItemText(hwndDlg, IDC_DISPLAY_AREA_SIZE, monitor->supportsDisplayAreaSize() ? L"Yes" : L"No");
-        //SetDlgItemText(hwndDlg, IDC_TECHNOLOGY_TYPE, monitor->supportsTechnologyType() ? L"Yes" : L"No");
-        return TRUE; // Initialization complete
-    case WM_CLOSE:
-        EndDialog(hwndDlg, 0); // Close the dialog when the X button is clicked
-        return TRUE;
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK) {
-            EndDialog(hwndDlg, IDOK);
-            return TRUE;
-        }
-        break;
-    }
-    return FALSE;
-}
+//INT_PTR CALLBACK PropertiesProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+//    static Monitor* monitor = nullptr; // Pointer to the Monitor object
+//
+//    switch (uMsg) {
+//    case WM_INITDIALOG:
+//        // Initialize the dialog with the monitor capabilities
+//        monitor = reinterpret_cast<Monitor*>(lParam); // Get the monitor pointer
+//        SetDlgItemText(hwndDlg, IDC_NAME, monitor->getNameW());
+//        SetDlgItemText(hwndDlg, IDC_BRIGHTNESS, monitor->supportsBrightness() ? L"Yes" : L"No");
+//        SetDlgItemText(hwndDlg, IDC_CONTRAST, monitor->supportsContrast() ? L"Yes" : L"No");
+//        SetDlgItemText(hwndDlg, IDC_DEGAUSS, monitor->supportsDegauss() ? L"Yes" : L"No");
+//        //SetDlgItemText(hwndDlg, IDC_DISPLAY_AREA_POSITION, monitor->supportsDisplayAreaPosition() ? L"Yes" : L"No");
+//        //SetDlgItemText(hwndDlg, IDC_DISPLAY_AREA_SIZE, monitor->supportsDisplayAreaSize() ? L"Yes" : L"No");
+//        //SetDlgItemText(hwndDlg, IDC_TECHNOLOGY_TYPE, monitor->supportsTechnologyType() ? L"Yes" : L"No");
+//        return TRUE; // Initialization complete
+//    case WM_CLOSE:
+//        EndDialog(hwndDlg, 0); // Close the dialog when the X button is clicked
+//        return TRUE;
+//    case WM_COMMAND:
+//        if (LOWORD(wParam) == IDOK) {
+//            EndDialog(hwndDlg, IDOK);
+//            return TRUE;
+//        }
+//        break;
+//    }
+//    return FALSE;
+//}
 
 ///////////////////
 //   FUNCTIONS   //
@@ -465,8 +466,7 @@ void HandleDoubleClick() {
 
         Monitor::SetBrightnessForAllAsync(hWnd, doubleClickValues[nextIndex]);
         PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)doubleClickValues[nextIndex], 0);
-    }
-    else {
+    } else {
         OutputDebugString(L"DoubleClick values from INI file are empty.");
     }
 }

@@ -15,11 +15,11 @@ class GUI
 		Configuration* configuration;
 		GUI();
 		~GUI();
-		BOOL SetTooltip(LPWSTR szTooltip);
+		BOOL SetTooltip(LPCWSTR szTooltip);
 		BOOL AddTaskBarIcon(BOOL modify = false, INT8 passedBrightness = -1);
 		BOOL UpdateTaskBarIcon(INT8 passedBrightness = -1);
 		BOOL CreateTaskBarMenu();
-		BOOL UpdateTaskBarMenu(INT8 passedBrightness = -1);
+		BOOL UpdateTaskBarMenu(WORD passedBrightness = -1);
 		VOID CreateMainWindowControls();
 		VOID DestroyTrayMenu();
 

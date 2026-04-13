@@ -22,14 +22,13 @@ GUI::~GUI()
 	}
 }
 
-BOOL GUI::AddTaskBarIcon(BOOL modify, INT8 passedBrightness)
+BOOL GUI::AddTaskBarIcon(BOOL modify, INT8 avgBrightness)
 {
     NOTIFYICONDATA nid = { 0 };
 
     std::wstring sTip;
     sTip.reserve(50);
     sTip = L"Average brightness: ";
-    INT8 avgBrightness = passedBrightness != -1 ? passedBrightness : Monitor::GetCurrentAverageBrightnessOfAll();
     if (avgBrightness < 0)
     {
         sTip = L"Couldn't read average brightness";
@@ -92,24 +91,16 @@ BOOL GUI::UpdateTaskBarIcon(INT8 passedBrightness) {
 	return this->AddTaskBarIcon(true, passedBrightness);
 }
 
-BOOL GUI::SetTooltip(LPWSTR szTooltip) {
+BOOL GUI::SetTooltip(LPCWSTR szTooltip) {
 	if (szTooltip == NULL) {
 		return FALSE;
 	}
-	// Allocate memory for the tooltip string
-    //szTooltip = std::wstring;
-	//if (szTooltip == NULL) {
-		//return FALSE;
-	//}
-	// Copy the tooltip string
-	//lstrcpy(szTooltip, szTooltip);
-	// Set the tooltip text
 	NOTIFYICONDATA nid = { 0 };
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.hWnd = GUI::hWnd;
 	nid.uID = ID_TRAY1;
 	nid.uFlags = NIF_TIP;
-	lstrcpy(nid.szTip, szTooltip);
+	wcsncpy_s(nid.szTip, _countof(nid.szTip), szTooltip, _TRUNCATE);
 	return Shell_NotifyIcon(NIM_MODIFY, &nid);
 }
 
@@ -150,17 +141,15 @@ BOOL GUI::CreateTaskBarMenu()
     return InsertMenuItem(hTrayMenu, IDM_EXIT, FALSE, &mii);
 }
 
-BOOL GUI::UpdateTaskBarMenu(INT8 passedBrightness) {
+BOOL GUI::UpdateTaskBarMenu(WORD passedBrightness) {
     if (!this->hTrayMenu) {
         return FALSE;
     }
-
-    INT8 averageBrightness = passedBrightness != -1 ? passedBrightness : Monitor::GetCurrentAverageBrightnessOfAll();
     std::vector<MenuValue> menuValues = this->configuration->GetContextMenuValues();
 
     for (size_t i = 0; i < menuValues.size(); ++i) {
         WORD val = menuValues[i].value;
-        UINT checkState = MF_BYCOMMAND | (val == (WORD)averageBrightness ? MF_CHECKED : MF_UNCHECKED);
+        UINT checkState = MF_BYCOMMAND | (val == (WORD)passedBrightness ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(this->hTrayMenu, IDM_TRAY_CONTEXTMENU + i, checkState);
     }
 
@@ -348,16 +337,9 @@ VOID GUI::CreateMainWindowControls() {
         xPosition + margin, yPosition + margin, width, height, GUI::hWnd, (HMENU)IDC_AUTOSTART_CHECKBOX, (HINSTANCE)GetWindowLongPtr(GUI::hWnd, GWLP_HINSTANCE), NULL
     );
     SendMessage(hAutostartCheckbox, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
-    {
-        HKEY hKey;
-        if (RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-            TCHAR exePath[MAX_PATH];
-            DWORD exePathLen = sizeof(exePath);
-            if (RegQueryValueEx(hKey, _T("MyProgram"), NULL, NULL, (LPBYTE)exePath, &exePathLen) == ERROR_SUCCESS) {
-                SendMessage(hAutostartCheckbox, BM_SETCHECK, BST_CHECKED, 0);
-            }
-            RegCloseKey(hKey);
-        }
+
+    if (Configuration::IsAutostartEnabled()) {
+        SendMessage(hAutostartCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 
     yPosition += height;
