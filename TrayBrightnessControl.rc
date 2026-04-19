@@ -2,12 +2,6 @@
 //
 #include "resource.h"
 
-// -------- WERSJA APLIKACJI --------
-#define TBC_VERSION_NUM 0,1,0,0
-#define TBC_VERSION_STR "0.1.0.0"
-#define TBC_VERSION_LTEXT "Version: 0.1.0.0"
-// ----------------------------------
-
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -28,6 +22,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -50,6 +45,7 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -58,8 +54,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-
-IDI_TRAYBRIGHTNESSCONTROL ICON                  "Icons//MONITOR.ICO"
+IDI_TRAYBRIGHTNESSCONTROL ICON                    "Icons//MONITOR.ICO"
 
 IDI_MOON0               ICON                    "Icons//MOON01.ICO"
 
@@ -79,9 +74,7 @@ IDI_MOON7               ICON                    "Icons//MOON07.ICO"
 
 IDI_MOON8               ICON                    "Icons//MOON08.ICO"
 
-
 IDI_EXIT                ICON                    "Icons//EXIT.ICO"
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,6 +86,7 @@ IDC_TRAYBRIGHTNESSCONTROL MENU
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Refresh configuration ...",  ID_FILE_CONFIGURATION
         MENUITEM "Exit\tAlt+F4",                IDM_EXIT
     END
     POPUP "&Help"
@@ -124,13 +118,13 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "About TrayBrightnessControl"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-	ICON            IDI_TRAYBRIGHTNESSCONTROL,IDC_STATIC,14,14,20,20
-	LTEXT           "TrayBrightnessControl", IDC_STATIC, 42, 14, 114, 8, SS_NOPREFIX
-	LTEXT           TBC_VERSION_LTEXT, IDC_STATIC, 42, 26, 114, 8
-	LTEXT           "Author: Marp",IDC_STATIC,42,38,140,8
-	LTEXT           "Copyright © 2024-2026", IDC_STATIC, 42, 50, 150, 8
-	LTEXT           "",IDC_BUILD_INFO,42,62,150,32
-	DEFPUSHBUTTON   "OK",IDOK,143,79,50,14,WS_GROUP
+    ICON            IDI_TRAYBRIGHTNESSCONTROL,IDC_STATIC,14,14,20,20
+    LTEXT           "TrayBrightnessControl",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Version: 0.1.0.0",IDC_STATIC,42,26,114,8
+    LTEXT           "Author: Marp",IDC_STATIC,42,38,140,8
+    LTEXT           "Copyright © 2024-2026",IDC_STATIC,42,50,150,8
+    LTEXT           "",IDC_BUILD_INFO,42,62,150,32
+    DEFPUSHBUTTON   "OK",IDOK,143,79,50,14,WS_GROUP
 END
 
 IDD_MONITOR_INFO DIALOGEX 0, 0, 201, 349
@@ -227,8 +221,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION TBC_VERSION_NUM
- PRODUCTVERSION TBC_VERSION_NUM
+ FILEVERSION 0,1,0,0
+ PRODUCTVERSION 0,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -243,12 +237,12 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Marp\0"
-            VALUE "FileDescription", "TrayBrightnessControl\0"
-            VALUE "FileVersion", TBC_VERSION_STR "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024-2026\0"
-            VALUE "ProductName", "TrayBrightnessControl\0"
-            VALUE "ProductVersion", TBC_VERSION_STR "\0"
+            VALUE "CompanyName", "Marp"
+            VALUE "FileDescription", "TrayBrightnessControl"
+            VALUE "FileVersion", "0.1.0.0"
+            VALUE "LegalCopyright", "Copyright (C) 2024-2026"
+            VALUE "ProductName", "TrayBrightnessControl"
+            VALUE "ProductVersion", "0.1.0.0"
         END
     END
     BLOCK "VarFileInfo"

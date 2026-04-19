@@ -135,6 +135,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         ShowWindow(hWnd, nCmdShow);
     }
 
+    std::thread([]() {
+        INT8 averageBrightness = Monitor::GetCurrentAverageBrightnessOfAll();
+        if (averageBrightness >= 0) {
+            PostMessageW(hWnd, CMSG_UPDATE_GUI, (WPARAM)averageBrightness, 0);
+        }
+    }).detach();
+
     MSG msg;
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TRAYBRIGHTNESSCONTROL));
     // Main message loop:
