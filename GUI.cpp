@@ -351,23 +351,6 @@ VOID GUI::CreateMainWindowControls() {
     );
     SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
-    yPosition += height;
-
-    hText = CreateWindow(
-        _T("BUTTON"), _T("Restore default config"),
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD,
-        xPosition + margin, yPosition + margin * 2, width-40, height, GUI::hWnd, (HMENU)IDC_RESTORE_DEFAULTS_SETTINGS, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL
-    );
-    SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
-
-    yPosition += height;
-
-    hText = CreateWindow(
-        _T("BUTTON"), _T("Reload configuration"),
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD,
-        xPosition + margin, yPosition + margin * 3, width-40, height, GUI::hWnd, (HMENU)IDC_RELOAD_CONFIG, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL
-    );
-    SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
     HICON hIconExit = LoadIcon(GUI::hInst, MAKEINTRESOURCE(IDI_EXIT));
 }

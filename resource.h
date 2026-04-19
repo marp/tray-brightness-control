@@ -9,6 +9,9 @@
 #define IDM_ABOUT                       104
 #define IDS_EXIT                        104
 #define IDM_EXIT                        105
+#define IDM_RELOAD_CONFIG               106
+#define IDM_RESTORE_DEFAULT_CONFIG      107
+#define IDM_REFRESH_DEVICES             108
 #define IDC_TRAYBRIGHTNESSCONTROL       110
 #define IDR_MAINFRAME                   128
 #define IDR_RCDATA1                     133
@@ -37,10 +40,8 @@
 #define IDC_EDIT_INI                    2008
 #define IDC_RESTORE_DEFAULTS_SETTINGS   2009
 #define IDC_BUILD_INFO                  2010
-#define IDC_RELOAD_CONFIG               2011
 #define CMSG_TRAY1                      0x8001
 #define CMSG_UPDATE_GUI                 0x8002
-#define ID_FILE_CONFIGURATION           32771
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

@@ -21,6 +21,9 @@ Configuration::Configuration(LPWSTR wstrFilePath) {
 }
 
 BOOL Configuration::LoadConfiguration() {
+	// Flush the cached INI file content to ensure we read the latest changes from disk
+	WritePrivateProfileStringW(NULL, NULL, NULL, this->configFilePath.c_str());
+
 	this->SetContextMenuValues(Configuration::GetContextMenuValues(const_cast<LPWSTR>(this->configFilePath.c_str())));
 	this->SetDoubleClickValues(Configuration::GetDoubleClickValues(const_cast<LPWSTR>(this->configFilePath.c_str())));
 	return true;
@@ -195,9 +198,6 @@ VOID Configuration::OpenTextEditor(LPWSTR szConfigFilePath) {
        //wcscpy_s(szConfigFilePath, len, defaultPath);  
    }  
    ShellExecute(NULL, _T("open"), _T("notepad.exe"), (LPWSTR)szConfigFilePath, NULL, SW_SHOW);
-
-   // Clean up dynamically allocated memory  
-   delete[] szConfigFilePath;  
 }
 
 BOOL Configuration::IsAutostartEnabled() {

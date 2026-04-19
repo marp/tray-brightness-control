@@ -296,14 +296,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDC_EDIT_INI:
                 Configuration::OpenTextEditor(config->GetConfigFilePath());
                 break;
-            case IDC_RESTORE_DEFAULTS_SETTINGS:
+            case IDM_RESTORE_DEFAULT_CONFIG:
                 if (MessageBox(hWnd, L"Do you want to replace the existing config.ini with the default one?", L"Restore the default configuration", MB_YESNO | MB_ICONWARNING) == 6) {
                     Configuration::CreateConfigFile(config->GetConfigFilePath());
-                    SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(IDC_RELOAD_CONFIG, 0), 0);
+                    SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(IDM_RELOAD_CONFIG, 0), 0);
                 }
                 break;
-            case IDC_RELOAD_CONFIG:
+            case IDM_RELOAD_CONFIG:
                 config->LoadConfiguration();
+                gui->DestroyTrayMenu();
+                gui->CreateTaskBarMenu();
+                break;
+            case IDM_REFRESH_DEVICES:
+                Monitor::detectAllMonitors();
+                EnumChildWindows(hWnd, [](HWND child, LPARAM lParam) -> BOOL {
+                    DestroyWindow(child);
+                    return TRUE;
+                }, 0);
+                gui->CreateMainWindowControls();
                 gui->DestroyTrayMenu();
                 gui->CreateTaskBarMenu();
                 break;
