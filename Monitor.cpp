@@ -671,27 +671,27 @@ INT8 Monitor::GetCurrentAverageBrightnessOfAll() {
 //		return -1;
 //	}
 //
-//	// Wektor do przechowywania wartości jasności każdego monitora
+//	// Vector to store brightness values of each monitor
 //	std::vector<DWORD> brightnessValues;
 //
-//	// Pobierz aktualną jasność z każdego monitora, który obsługuje regulację jasności
+//	// Get current brightness from each monitor that supports brightness control
 //	for (Monitor* monitor : monitors) {
 //		if (monitor->supportsBrightness()) {
 //			ContinuousSetting* brightness = monitor->getBrightness();
 //			if (brightness != nullptr) {
 //				brightnessValues.push_back(brightness->current);
-//				delete brightness; // Pamiętaj, aby zwolnić pamięć
+//				delete brightness; // Remember to free memory
 //			}
 //		}
 //	}
 //
-//	// Sprawdź, czy udało się pobrać jakiekolwiek wartości jasności
+//	// Check if any brightness values were retrieved
 //	if (brightnessValues.empty()) {
 //		OutputDebugString(L"No brightness values retrieved.");
 //		return -1;
 //	}
 //
-//	// Oblicz średnią jasność
+//	// Calculate the average brightness
 //	DWORD averageBrightness = std::accumulate(brightnessValues.begin(), brightnessValues.end(), 0) / brightnessValues.size();
 //
 //	return averageBrightness;
@@ -723,31 +723,31 @@ VOID Monitor::SetBrightnessForAllAsync(HWND hWnd, unsigned long newValue) {
 }
 
 BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-	// Tworzymy nowy obiekt Monitor dla każdego wykrytego monitora
+	// Create a new Monitor object for each detected monitor
 	Monitor* newMonitor = new Monitor(hMonitor);
 
-	// Sprawdzamy, czy obiekt jest prawidłowy, zanim go dodamy
+	// Check if the object is valid before adding it
 	if (newMonitor->isValid()) {
 		Monitor::monitors.push_back(newMonitor);
 	}
 	else {
 		MessageBox(NULL, L"Monitor is not valid", L"Error", MB_ICONERROR);
-		delete newMonitor;  // Usuwamy obiekt, jeśli jest nieprawidłowy
+		delete newMonitor;  // Delete the object if it is invalid
 	}
 
-	return TRUE;  // Kontynuujemy iterację
+	return TRUE;  // Continue iteration
 }
 
 //CUSTOM
 
 void Monitor::detectAllMonitors() {
-	// Czyścimy listę monitorów, aby uniknąć duplikatów
+	// Clear the monitor list to avoid duplicates
 	for (Monitor* monitor : monitors) {
 		delete monitor;
 	}
 	monitors.clear();
 
-	// Wywołujemy EnumDisplayMonitors, aby znaleźć wszystkie monitory
+	// Call EnumDisplayMonitors to find all monitors
 	if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0)) {
 		std::cout << "Error enumerating monitors: " << GetLastError() << std::endl;
 	}
