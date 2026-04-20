@@ -324,7 +324,7 @@ VOID GUI::CreateMainWindowControls() {
     //GROUP BOX
     hText = CreateWindow(L"Button", L"Configuration",
         WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-        xPosition, yPosition + margin, width, 140, GUI::hWnd, (HMENU)0, 0, NULL);
+        xPosition, yPosition + margin, width, 80, GUI::hWnd, (HMENU)0, 0, NULL);
     SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
     width = 205;
