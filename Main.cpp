@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "Main.h"
+#include <windowsx.h>
 #include <memory>
 
 #pragma comment(lib,"Shcore.lib")
@@ -248,6 +249,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case CMSG_REBUILD_GUI:
+        {
+            if (gui) {
+                EnumChildWindows(hWnd, [](HWND child, LPARAM lParam) -> BOOL {
+                    DestroyWindow(child);
+                    return TRUE;
+                }, 0);
+                gui->CreateMainWindowControls();
+                gui->DestroyTrayMenu();
+                gui->CreateTaskBarMenu();
+            }
+        }
+        break;
     case CMSG_UPDATE_GUI:
         {
             if (gui) {
@@ -308,14 +322,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 gui->CreateTaskBarMenu();
                 break;
             case IDM_REFRESH_DEVICES:
-                Monitor::detectAllMonitors();
-                EnumChildWindows(hWnd, [](HWND child, LPARAM lParam) -> BOOL {
-                    DestroyWindow(child);
-                    return TRUE;
-                }, 0);
-                gui->CreateMainWindowControls();
-                gui->DestroyTrayMenu();
-                gui->CreateTaskBarMenu();
+                {
+                    static std::atomic<bool> isRefreshing(false);
+                    if (isRefreshing) break;
+                    isRefreshing = true;
+
+                    std::thread([](HWND hwndTarget, std::atomic<bool>* flag) {
+                        Monitor::detectAllMonitors();
+                        *flag = false;
+                        PostMessageW(hwndTarget, CMSG_REBUILD_GUI, 0, 0);
+                    }, hWnd, &isRefreshing).detach();
+                }
                 break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
@@ -358,6 +375,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             UpdateTrayIconTooltipAsync(hWnd);
         }*/
 
+    }
+        break;
+    case WM_CONTEXTMENU:
+    {
+        if (GetDlgCtrlID((HWND)wParam) == IDC_LISTVIEW)
+        {
+            HMENU hPopup = CreatePopupMenu();
+            if (hPopup)
+            {
+                AppendMenu(hPopup, MF_STRING, IDM_REFRESH_DEVICES, L"Refresh available devices");
+
+                int xPos = GET_X_LPARAM(lParam);
+                int yPos = GET_Y_LPARAM(lParam);
+
+                // If activated from the keyboard, center the menu over the listview
+                if (xPos == -1 && yPos == -1)
+                {
+                    RECT rc;
+                    GetWindowRect((HWND)wParam, &rc);
+                    xPos = rc.left + (rc.right - rc.left) / 2;
+                    yPos = rc.top + (rc.bottom - rc.top) / 2;
+                }
+
+                TrackPopupMenu(hPopup, TPM_RIGHTBUTTON, xPos, yPos, 0, hWnd, NULL);
+                DestroyMenu(hPopup);
+            }
+        }
     }
         break;
     case WM_PAINT:

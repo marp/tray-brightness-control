@@ -3,6 +3,10 @@
 #include <commctrl.h>
 #pragma comment(lib, "Comctl32.lib")
 
+#pragma comment(linker,"\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 // Define static members
 HINSTANCE GUI::hInst = nullptr;
 HWND GUI::hWnd = nullptr;
@@ -255,9 +259,9 @@ VOID GUI::CreateMainWindowControls() {
 	/////////////////
 
 	// Create the Group Box first so it is drawn behind the ListView
-	DWORD groupBoxHeight = height * (Monitor::monitors.size() + 1) + 20;
+	DWORD groupBoxHeight = height * (Monitor::monitors.size() + 1) + 35;
 	if (Monitor::monitors.empty()) {
-		groupBoxHeight = height * 2 + 20;
+		groupBoxHeight = height * 2 + 35;
 	}
 
 	hText = CreateWindow(L"Button", L"Detected monitors",
@@ -268,15 +272,16 @@ VOID GUI::CreateMainWindowControls() {
 	// Create ListView
 	HWND hListView = CreateWindowExW(0, WC_LISTVIEW, L"",
 		WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOSORTHEADER | WS_BORDER,
-		margin * 4, margin * 4, width - margin * 4, groupBoxHeight - margin * 5,
-		GUI::hWnd, NULL, GUI::hInst, NULL);
+		margin * 4, margin * 4, width - margin * 4, groupBoxHeight - margin * 6,
+		GUI::hWnd, (HMENU)IDC_LISTVIEW, GUI::hInst, NULL);
 
 	SendMessage(hListView, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
 	// Set extended style for column dividers and full row select
-	ListView_SetExtendedListViewStyle(hListView, LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyle(hListView, LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
 	HIMAGELIST hImageList = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 1);
+	ImageList_SetBkColor(hImageList, CLR_NONE);
 	SHSTOCKICONINFO sii = { 0 };
 	sii.cbSize = sizeof(sii);
 	// SIID_DESKTOPPC (94) acts as a decent alternative screen/monitor icon
@@ -292,7 +297,7 @@ VOID GUI::CreateMainWindowControls() {
 
 	// First column: Monitor Name
 	lvc.iSubItem = 0;
-	lvc.cx = 120;
+	lvc.cx = 130;
 	lvc.pszText = const_cast<LPWSTR>(L"Name");
 	ListView_InsertColumn(hListView, 0, &lvc);
 

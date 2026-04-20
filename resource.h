@@ -40,8 +40,10 @@
 #define IDC_EDIT_INI                    2008
 #define IDC_RESTORE_DEFAULTS_SETTINGS   2009
 #define IDC_BUILD_INFO                  2010
+#define IDC_LISTVIEW                    2012
 #define CMSG_TRAY1                      0x8001
 #define CMSG_UPDATE_GUI                 0x8002
+#define CMSG_REBUILD_GUI                0x8003
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

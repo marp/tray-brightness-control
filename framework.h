@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <thread>  
+#include <atomic>
 
 #include <shellscalingapi.h>
 
