@@ -1,4 +1,7 @@
 #include "GUI.h"
+#include "GUI.h"
+#include <commctrl.h>
+#pragma comment(lib, "Comctl32.lib")
 
 // Define static members
 HINSTANCE GUI::hInst = nullptr;
@@ -247,71 +250,85 @@ VOID GUI::CreateMainWindowControls() {
     DWORD width = 225;
     DWORD margin = 5;
 
-    ///////////////////
-    //MONITORS GROUP//
+	///////////////////
+	//MONITORS GROUP//
 	/////////////////
-    for (Monitor* monitor : Monitor::monitors)
-    {
-        yPosition++;
-        //OutputDebugString(monitor->getNameW());
-        height = 20;
 
-        DWORD y = 5 + height * yPosition;
+	// Create the Group Box first so it is drawn behind the ListView
+	DWORD groupBoxHeight = height * (Monitor::monitors.size() + 1) + 20;
+	if (Monitor::monitors.empty()) {
+		groupBoxHeight = height * 2 + 20;
+	}
 
-        hText = CreateWindow(
-            L"STATIC",                  
-            monitor->getNameW(),                          
-            WS_CHILD | WS_VISIBLE,  
-            20, y,                      
-            120, 20,                     
-            GUI::hWnd,                        
-            NULL,                        
-            GUI::hInst,                       
-            NULL);                       
-        SendMessage(hText, WM_SETFONT, (WPARAM)hBoldFont, 0);
+	hText = CreateWindow(L"Button", L"Detected monitors",
+		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+		margin * 2, margin, width, groupBoxHeight, GUI::hWnd, (HMENU)0, 0, NULL);
+	SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
-        hText = CreateWindow(
-            L"STATIC",                   
-            L"Brightness: ",                           
-            WS_CHILD | WS_VISIBLE | SS_LEFT,  
-            140, y,                      
-            100, 20,                     
-            GUI::hWnd,                        
-            NULL,                        
-            GUI::hInst,                       
-            NULL);                       
+	// Create ListView
+	HWND hListView = CreateWindowExW(0, WC_LISTVIEW, L"",
+		WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_NOSORTHEADER | WS_BORDER,
+		margin * 4, margin * 4, width - margin * 4, groupBoxHeight - margin * 5,
+		GUI::hWnd, NULL, GUI::hInst, NULL);
 
-        SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
+	SendMessage(hListView, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
 
-        std::wstring aaa = L"?";
-        if (monitor->supportsBrightness()) {
-            aaa = std::to_wstring(monitor->getBrightness()->current);
-            aaa.append(L"%");
-        }
+	// Set extended style for column dividers and full row select
+	ListView_SetExtendedListViewStyle(hListView, LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
 
-        hText = CreateWindow(
-            L"STATIC",                   
-            aaa.c_str(),                           
-            WS_CHILD | WS_VISIBLE | SS_LEFT,  
-            200, y,                      
-            100, 20,                     
-            GUI::hWnd,                        
-            NULL,                       
-            GUI::hInst,                       
-            NULL);                       
-        SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
+	HIMAGELIST hImageList = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 1);
+	SHSTOCKICONINFO sii = { 0 };
+	sii.cbSize = sizeof(sii);
+	// SIID_DESKTOPPC (94) acts as a decent alternative screen/monitor icon
+	if (SUCCEEDED(SHGetStockIconInfo((SHSTOCKICONID)94, SHGSI_ICON | SHGSI_SMALLICON, &sii))) {
+		ImageList_AddIcon(hImageList, sii.hIcon);
+		DestroyIcon(sii.hIcon);
+	}
+	ListView_SetImageList(hListView, hImageList, LVSIL_SMALL);
 
-    }
+	LVCOLUMNW lvc = { 0 };
+	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+	lvc.fmt = LVCFMT_LEFT;
 
-    height = 25;
-    width = 225;
-    yPosition++;
+	// First column: Monitor Name
+	lvc.iSubItem = 0;
+	lvc.cx = 120;
+	lvc.pszText = const_cast<LPWSTR>(L"Name");
+	ListView_InsertColumn(hListView, 0, &lvc);
 
-    //GROUP BOX
-    hText = CreateWindow(L"Button", L"Detected monitors",
-        WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-        2* margin, margin, width, height * yPosition, GUI::hWnd, (HMENU)0, 0, NULL);
-    SendMessage(hText, WM_SETFONT, (WPARAM)this->hNormalFont, 0);
+	// Second column: Brightness
+	lvc.iSubItem = 1;
+	lvc.cx = 70;
+	lvc.pszText = const_cast<LPWSTR>(L"Brightness");
+	ListView_InsertColumn(hListView, 1, &lvc);
+
+	int rowIndex = 0;
+	for (Monitor* monitor : Monitor::monitors)
+	{
+		yPosition++;
+
+		// Add row
+		LVITEMW lvi = { 0 };
+		lvi.mask = LVIF_TEXT | LVIF_IMAGE;
+		lvi.iItem = rowIndex;
+		lvi.iSubItem = 0;
+		lvi.iImage = 0;
+		lvi.pszText = const_cast<LPWSTR>(monitor->getNameW());
+		ListView_InsertItem(hListView, &lvi);
+
+		std::wstring aaa = L"?";
+		if (monitor->supportsBrightness()) {
+			ContinuousSetting* b = monitor->getBrightness();
+			if (b) {
+				aaa = std::to_wstring(b->current) + L"%";
+				delete b;
+			}
+		}
+
+		ListView_SetItemText(hListView, rowIndex, 1, const_cast<LPWSTR>(aaa.c_str()));
+
+		rowIndex++;
+	}
 
     ///////////////////
     //CONFIG GROUP
