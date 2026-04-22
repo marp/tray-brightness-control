@@ -42,6 +42,7 @@ public:
 
 	//Get Setting Values (I won't cache these as they can change via external influences (Monitor controls))
 	ContinuousSetting* getBrightness();
+	ContinuousSetting* getContrast();
 
 
 	//Set Settings

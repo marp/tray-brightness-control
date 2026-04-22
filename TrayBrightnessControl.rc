@@ -87,8 +87,9 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Refresh available devices",  IDM_REFRESH_DEVICES
-        MENUITEM "&Reload configuration ...",  IDM_RELOAD_CONFIG
-        MENUITEM "&Restore default configuration ...",  IDM_RESTORE_DEFAULT_CONFIG
+        MENUITEM "&Reload configuration ...",   IDM_RELOAD_CONFIG
+        MENUITEM "&Restore default configuration ...", IDM_RESTORE_DEFAULT_CONFIG
+        MENUITEM SEPARATOR
         MENUITEM "Exit\tAlt+F4",                IDM_EXIT
     END
     POPUP "&Help"

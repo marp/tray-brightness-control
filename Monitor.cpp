@@ -211,29 +211,29 @@ ContinuousSetting* Monitor::getBrightness()
 //	}
 //}
 //
-//ContinuousSetting* Monitor::getContrast()
-//{
-//	if (supportsContrast())
-//	{
-//		ContinuousSetting* contrast = new ContinuousSetting;
-//
-//		if (GetMonitorContrast(monitorPointer.hPhysicalMonitor, &contrast->min, &contrast->current, &contrast->max) == TRUE)
-//		{
-//			return contrast;
-//		}
-//		else
-//		{
-//			delete contrast;
-//			std::cout << getName() << " could not fetch contrast info. Win32 Error Code: " << GetLastError();
-//			return nullptr;
-//		}
-//	}
-//	else
-//	{
-//		std::cout << getName() << " does not support Contrast functions" << std::endl;
-//		return nullptr;
-//	}
-//}
+ContinuousSetting* Monitor::getContrast()
+{
+	if (supportsContrast())
+	{
+		ContinuousSetting* contrast = new ContinuousSetting;
+
+		if (GetMonitorContrast(monitorPointer.hPhysicalMonitor, &contrast->min, &contrast->current, &contrast->max) == TRUE)
+		{
+			return contrast;
+		}
+		else
+		{
+			delete contrast;
+			std::cout << getName() << " could not fetch contrast info. Win32 Error Code: " << GetLastError();
+			return nullptr;
+		}
+	}
+	else
+	{
+		std::cout << getName() << " does not support Contrast functions" << std::endl;
+		return nullptr;
+	}
+}
 //
 //bool Monitor::getDisplayAreaPosition()
 //{

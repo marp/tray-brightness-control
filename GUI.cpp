@@ -248,11 +248,11 @@ VOID GUI::CreateMainWindowControls() {
 
     HWND hText;
 
-    DWORD yPosition = 0;
-    DWORD xPosition = 0;
-    DWORD height = 25;
-    DWORD width = 225;
-    DWORD margin = 5;
+	DWORD yPosition = 0;
+	DWORD xPosition = 0;
+	DWORD height = 25;
+	DWORD width = 295;
+	DWORD margin = 5;
 
 	///////////////////
 	//MONITORS GROUP//
@@ -307,6 +307,12 @@ VOID GUI::CreateMainWindowControls() {
 	lvc.pszText = const_cast<LPWSTR>(L"Brightness");
 	ListView_InsertColumn(hListView, 1, &lvc);
 
+	// Third column: Contrast
+	lvc.iSubItem = 2;
+	lvc.cx = 70;
+	lvc.pszText = const_cast<LPWSTR>(L"Contrast");
+	ListView_InsertColumn(hListView, 2, &lvc);
+
 	int rowIndex = 0;
 	for (Monitor* monitor : Monitor::monitors)
 	{
@@ -321,26 +327,37 @@ VOID GUI::CreateMainWindowControls() {
 		lvi.pszText = const_cast<LPWSTR>(monitor->getNameW());
 		ListView_InsertItem(hListView, &lvi);
 
-		std::wstring aaa = L"?";
+		std::wstring brightStr = L"?";
 		if (monitor->supportsBrightness()) {
 			ContinuousSetting* b = monitor->getBrightness();
 			if (b) {
-				aaa = std::to_wstring(b->current) + L"%";
+				brightStr = std::to_wstring(b->current) + L"%";
 				delete b;
 			}
 		}
 
-		ListView_SetItemText(hListView, rowIndex, 1, const_cast<LPWSTR>(aaa.c_str()));
+		ListView_SetItemText(hListView, rowIndex, 1, const_cast<LPWSTR>(brightStr.c_str()));
+
+		std::wstring contrastStr = L"?";
+		if (monitor->supportsContrast()) {
+			ContinuousSetting* c = monitor->getContrast();
+			if (c) {
+				contrastStr = std::to_wstring(c->current) + L"%";
+				delete c;
+			}
+		}
+
+		ListView_SetItemText(hListView, rowIndex, 2, const_cast<LPWSTR>(contrastStr.c_str()));
 
 		rowIndex++;
 	}
 
-    ///////////////////
-    //CONFIG GROUP
-    /////////////////
-    yPosition = 0;
-    xPosition = 245;
-    width = 225;
+	///////////////////
+	//CONFIG GROUP
+	/////////////////
+	yPosition = 0;
+	xPosition = 315;
+	width = 225;
     margin = 5;
 
     //GROUP BOX
